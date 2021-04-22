@@ -38,14 +38,23 @@ def format_text(text, maxColumn=32):
 
 def get_next_line():
     with open(STATE_FILENAME, 'rw') as statefile:
-        current_line = json.load('')
-        last_line = ''
-        # TODO: update current_line in file
-        if current_line >= last_line:
+        state = json.load(statefile)
+        current_line = state['current_line']
+        last_line = state['last_line']
+
+        # Print blank lines to signal we're done
+        if current_line > last_line:
             return '\n'
-    with open(STATE_FILENAME, 'rw') as textfile:
+    with open(TEXT_FILENAME, 'r') as textfile:
         lines = textfile.readlines()
         return lines[current_line]
+
+
+def mark_line_as_read():
+    with open(STATE_FILENAME, 'rw') as statefile:
+        state = json.load(statefile)
+        state['current_line'] += 1
+        json.dump(state, statefile)
 
 
 def get_printer():
@@ -79,4 +88,5 @@ if __name__ == '__main__':
         next_line = get_next_line()
         formatted_line = format_text(next_line)
         printer.print(formatted_line)
+        mark_line_as_read()
         button.wait_for_release()
